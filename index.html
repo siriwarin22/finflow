@@ -898,6 +898,11 @@ html.dark .pending-banner{background:linear-gradient(135deg,rgba(251,191,36,.06)
 /* empty state icon */
 .emico{display:flex;justify-content:center;margin-bottom:12px;opacity:.35;}
 .emico svg{width:36px;height:36px;}
+#txCardList{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-sm);}
+html.dark #txCardList{background:rgba(22,27,39,.8);}
+#txCardList>div:last-child{border-bottom:none;}
+#txCardList>div:hover{background:var(--s2);}
+html.dark #txCardList>div:hover{background:var(--s3);}
 </style>
 <!-- Firebase SDK -->
 <script type="module">
@@ -1077,7 +1082,7 @@ onAuthStateChanged(auth, async (user) => {
   <!-- ── ROW 4: Recent transactions ── -->
   <div class="section">
     <div class="sech"><div class="sectl"><div class="sectd" style="background:var(--accent)"></div>รายการล่าสุด</div><button class="btn bg bsm" onclick="expCSV()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export CSV</button></div>
-    <div class="twrap"><table><thead><tr><th>วันที่</th><th>รายการ</th><th>หมวดหมู่</th><th>ประเภท</th><th>จำนวน</th></tr></thead><tbody id="recTx"></tbody></table></div>
+    <div id="recTxWrap"></div>
   </div>
 </div>
 
@@ -1150,7 +1155,7 @@ onAuthStateChanged(auth, async (user) => {
         <select id="txFC" onchange="rendTx()"><option value="">ทุกหมวด</option></select>
         <input type="month" id="txFM" onchange="rendTx()">
       </div>
-      <div class="twrap"><table><thead><tr><th>วันที่</th><th>รายการ</th><th>หมวดหมู่</th><th style="text-align:right;">จำนวน / ประเภท</th><th></th></tr></thead><tbody id="txTbl"></tbody></table></div>
+      <div class="twrap"><table><thead><tr><th>วันที่</th><th>รายการ</th><th>หมวดหมู่</th><th>ประเภท</th><th>จำนวน</th><th></th></tr></thead><tbody id="txTbl"></tbody></table></div>
     </div>
   </div>
 
@@ -2355,32 +2360,78 @@ function rendTx(){
   if(fm2) rows=rows.filter(r=>r.dt.slice(0,7)===fm2);
   const tb=document.getElementById('txTbl');
   if(!rows.length){tb.innerHTML='<tr><td colspan="7"><div class="empty"><div class="emico"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div>ไม่มีรายการ</div></td></tr>';return;}
-  tb.innerHTML=rows.map(r=>{
-    const isSplit=r.tg==='จ่ายก่อน',isReturn=r.tg==='รับคืน';
-    const isIncome=r.t==='income';
-    const w=walletById(r.walletId);
-    const specialDot=isSplit?'<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--sky);margin-left:4px;vertical-align:middle;" title="จ่ายก่อน"></span>':isReturn?'<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--emerald);margin-left:4px;vertical-align:middle;" title="รับคืน"></span>':'';
-    return `<tr>
-      <td style="white-space:nowrap;font-size:12px;color:var(--text3);font-family:var(--mono);">${fd(r.dt)}</td>
-      <td>
-        <div style="font-size:14px;font-weight:500;display:flex;align-items:center;gap:4px;">${r.nt||'—'}${specialDot}</div>
-        ${w?`<div style="font-size:11.5px;color:var(--text3);margin-top:2px;display:flex;align-items:center;gap:3px;"><span style="color:${w.color};font-size:12px;">${w.icon}</span>${w.name}</div>`:''}
-      </td>
-      <td><span class="cpill"><span class="cdot" style="background:${CC[r.cat]||'#94a3b8'}"></span>${r.cat}</span></td>
-      <td>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-          <span style="font-family:var(--mono);font-weight:700;font-size:14.5px;color:${isIncome?'var(--emerald)':'var(--crimson)'};">${isIncome?'+':'-'}${fm(r.amt)}</span>
-          <span style="font-size:11px;padding:2px 7px;border-radius:99px;font-weight:600;background:${isIncome?'var(--emerald-bg)':'var(--crimson-bg)'};color:${isIncome?'var(--emerald)':'var(--crimson)'};border:1px solid ${isIncome?'var(--emerald-dim)':'var(--crimson-dim)'};">${isIncome?'รายรับ':'รายจ่าย'}</span>
+  const isMobile = window.innerWidth <= 768;
+  if(isMobile){
+    // Card-style list for mobile
+    tb.closest('.twrap').style.display='none';
+    let cardList=document.getElementById('txCardList');
+    if(!cardList){
+      cardList=document.createElement('div');
+      cardList.id='txCardList';
+      tb.closest('.twrap').parentNode.insertBefore(cardList,tb.closest('.twrap').nextSibling);
+    }
+    cardList.style.display='block';
+    cardList.innerHTML=rows.map(r=>{
+      const isIncome=r.t==='income';
+      const w=walletById(r.walletId);
+      const isSplit=r.tg==='จ่ายก่อน',isReturn=r.tg==='รับคืน';
+      const tag=isSplit?`<span style="font-size:10px;padding:1px 7px;border-radius:99px;background:var(--sky-bg);color:var(--sky);border:1px solid var(--sky-dim);font-weight:600;">จ่ายก่อน</span>`:isReturn?`<span style="font-size:10px;padding:1px 7px;border-radius:99px;background:var(--emerald-bg);color:var(--emerald);border:1px solid var(--emerald-dim);font-weight:600;">รับคืน</span>`:'';
+      return `<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface);">
+        <!-- Left: color dot -->
+        <div style="width:38px;height:38px;border-radius:10px;background:${isIncome?'var(--emerald-bg)':'var(--crimson-bg)'};border:1px solid ${isIncome?'var(--emerald-dim)':'var(--crimson-dim)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <span style="width:8px;height:8px;border-radius:50%;background:${CC[r.cat]||'#94a3b8'};display:block;"></span>
         </div>
-      </td>
-      <td style="white-space:nowrap;">
-        <div style="display:flex;gap:5px;">
-          <button class="btn bsm" style="background:var(--s3);color:var(--text2);border:1px solid var(--border);padding:6px 10px;" onclick="openEditTx(${r.id})" title="แก้ไข"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-          <button class="btn bd bsm" onclick="delTx(${r.id})" title="ลบ" style="padding:6px 10px;"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+        <!-- Middle: name + category + date -->
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:14.5px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.nt||'—'} ${tag}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;">
+            <span style="font-size:12px;color:var(--text3);">${r.cat}</span>
+            <span style="color:var(--border2);font-size:10px;">·</span>
+            <span style="font-size:12px;color:var(--text3);font-family:var(--mono);">${fd(r.dt)}</span>
+          </div>
         </div>
-      </td>
-    </tr>`;
-  }).join('');
+        <!-- Right: amount + actions -->
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
+          <span style="font-family:var(--mono);font-weight:700;font-size:15px;color:${isIncome?'var(--emerald)':'var(--crimson)'};">${isIncome?'+':'-'}${fm(r.amt)}</span>
+          <div style="display:flex;gap:5px;">
+            <button onclick="openEditTx(${r.id})" style="background:var(--s3);border:1px solid var(--border);border-radius:7px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button onclick="delTx(${r.id})" style="background:var(--crimson-bg);border:1px solid var(--crimson-dim);border-radius:7px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--crimson);">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    // Table for desktop
+    const cardList=document.getElementById('txCardList');
+    if(cardList) cardList.style.display='none';
+    tb.closest('.twrap').style.display='';
+    tb.innerHTML=rows.map(r=>{
+      const isSplit=r.tg==='จ่ายก่อน',isReturn=r.tg==='รับคืน';
+      const isIncome=r.t==='income';
+      const w=walletById(r.walletId);
+      const tag=isSplit?'<span style="font-size:10.5px;padding:2px 8px;border-radius:99px;background:var(--sky-bg);color:var(--sky);border:1px solid var(--sky-dim);">จ่ายก่อน</span>':isReturn?'<span style="font-size:10.5px;padding:2px 8px;border-radius:99px;background:var(--emerald-bg);color:var(--emerald);border:1px solid var(--emerald-dim);">รับคืน</span>':'';
+      return `<tr>
+        <td style="white-space:nowrap;font-size:12px;color:var(--text3);font-family:var(--mono);">${fd(r.dt)}</td>
+        <td>
+          <div style="font-size:14px;font-weight:500;">${r.nt||'—'} ${tag}</div>
+          ${w?`<div style="font-size:11.5px;color:var(--text3);margin-top:2px;">${w.icon} ${w.name}</div>`:''}
+        </td>
+        <td><span class="cpill"><span class="cdot" style="background:${CC[r.cat]||'#94a3b8'}"></span>${r.cat}</span></td>
+        <td><span class="badge ${isIncome?'bi':'bex'}">${isIncome?'รายรับ':'รายจ่าย'}</span></td>
+        <td class="${isIncome?'cp':'cn'}" style="font-family:var(--mono);font-weight:700;">${isIncome?'+':'-'}${fm(r.amt)}</td>
+        <td style="white-space:nowrap;">
+          <div style="display:flex;gap:5px;">
+            <button class="btn bsm" style="background:var(--s3);color:var(--text2);border:1px solid var(--border);padding:6px 10px;" onclick="openEditTx(${r.id})"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            <button class="btn bd bsm" onclick="delTx(${r.id})" style="padding:6px 10px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
 }
 
 // ── LOANS ────────────────────────────────────────────────
@@ -2420,14 +2471,33 @@ function rOverview(){
     <span style="font-family:var(--mono);font-size:12.5px">${fm(a)} <span class="cd">${tot>0?((a/tot)*100).toFixed(0):0}%</span></span></div>`).join(''):
     '<div class="empty" style="padding:16px">ยังไม่มีข้อมูล</div>';
 
-  // Recent
+  // Recent — card style
   const rec=[...D.tx].sort((a,b)=>new Date(b.dt)-new Date(a.dt)).slice(0,8);
-  document.getElementById('recTx').innerHTML=rec.length?rec.map(r=>`
-    <tr><td class="cd mono">${fd(r.dt)}</td><td>${r.nt||'—'}</td>
-    <td><span class="cpill"><span class="cdot" style="background:${CC[r.cat]||'#94a3b8'}"></span>${r.cat}</span></td>
-    <td><span class="badge ${r.t==='income'?'bi':'bex'}">${r.t==='income'?'รายรับ':'รายจ่าย'}</span></td>
-    <td class="${r.t==='income'?'cp':'cn'}">${r.t==='income'?'+':'-'}${fm(r.amt)}</td></tr>`).join(''):
-    '<tr><td colspan="5"><div class="empty"><div class="emico"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div>ยังไม่มีรายการ</div></td></tr>';
+  const recWrap=document.getElementById('recTxWrap');
+  if(recWrap){
+    if(!rec.length){
+      recWrap.innerHTML=`<div class="empty"><div class="emico"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div>ยังไม่มีรายการ</div>`;
+    } else {
+      recWrap.innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-sm);">`+rec.map((r,i)=>{
+        const isIncome=r.t==='income';
+        const w=walletById(r.walletId);
+        return `<div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:${i<rec.length-1?'1px solid var(--border)':'none'};">
+          <div style="width:36px;height:36px;border-radius:10px;background:${isIncome?'var(--emerald-bg)':'var(--crimson-bg)'};border:1px solid ${isIncome?'var(--emerald-dim)':'var(--crimson-dim)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <span style="width:8px;height:8px;border-radius:50%;background:${CC[r.cat]||'#94a3b8'};display:block;"></span>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.nt||'—'}</div>
+            <div style="display:flex;align-items:center;gap:5px;margin-top:2px;">
+              <span style="font-size:11.5px;color:var(--text3);">${r.cat}</span>
+              <span style="color:var(--border2);">·</span>
+              <span style="font-size:11.5px;color:var(--text3);font-family:var(--mono);">${fd(r.dt)}</span>
+            </div>
+          </div>
+          <span style="font-family:var(--mono);font-weight:700;font-size:14.5px;color:${isIncome?'var(--emerald)':'var(--crimson)'};flex-shrink:0;">${isIncome?'+':'-'}${fm(r.amt)}</span>
+        </div>`;
+      }).join('')+`</div>`;
+    }
+  }
 
   rSvOverview();
   // Wallet mini summary in overview
