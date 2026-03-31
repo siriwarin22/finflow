@@ -381,8 +381,10 @@ html.dark .subtab.active{background:var(--s2);}
 ═══════════════════════════════════════════ */
 .twrap{
   background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-sm);
+  border-radius:var(--r-lg);overflow-x:auto;box-shadow:var(--sh-sm);
+  -webkit-overflow-scrolling:touch;
 }
+.twrap table{min-width:520px;}
 html.dark .twrap{background:rgba(22,27,39,.8);}
 table{width:100%;border-collapse:collapse;}
 thead tr{background:var(--s2);}
@@ -802,7 +804,7 @@ html.dark .pending-banner{background:linear-gradient(135deg,rgba(251,191,36,.06)
   [style*="grid-template-columns:1fr 380px"]{grid-template-columns:1fr!important;}
 
   /* Table — show fewer columns */
-  th:nth-child(n+4),td:nth-child(n+4){display:none;}
+
 
   /* Subtabs */
   .subtabs{width:100%;display:flex;}
@@ -839,8 +841,7 @@ html.dark .pending-banner{background:linear-gradient(135deg,rgba(251,191,36,.06)
   .lcamt{font-size:20px;}
 
   /* Recent tx table minimal */
-  .twrap table th:nth-child(3),
-  .twrap table td:nth-child(3){display:none;}
+
 
   /* Wallet cards */
   .wcard{padding:18px 16px;}
@@ -859,8 +860,23 @@ html.dark .pending-banner{background:linear-gradient(135deg,rgba(251,191,36,.06)
   .scard{padding:14px 13px;}
   .sc-val{font-size:19px;}
   .wgrid{grid-template-columns:1fr;}
-  th:nth-child(n+4),td:nth-child(n+4){display:none;}
+
   #authBar{font-size:11.5px;}
+}
+
+@media(max-width:768px){
+  .twrap table{min-width:480px;}
+  .twrap th{padding:10px 12px;font-size:10.5px;}
+  .twrap td{padding:11px 12px;font-size:13px;}
+  /* Scroll hint gradient on right edge */
+  .twrap{
+    position:relative;
+  }
+}
+@media(max-width:480px){
+  .twrap table{min-width:440px;}
+  .twrap th{padding:9px 10px;}
+  .twrap td{padding:10px 10px;}
 }
 </style>
 <!-- Firebase SDK -->
