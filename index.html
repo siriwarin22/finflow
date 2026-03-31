@@ -2,7 +2,12 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f4f6fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="img-src 'self' https://*.googleusercontent.com data: blob:;">
 <title>FinFlow — บริหารการเงินส่วนตัว</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -129,7 +134,7 @@ html.dark body::after{
 /* ═══════════════════════════════════════════
    LAYOUT
 ═══════════════════════════════════════════ */
-.app{max-width:1360px;margin:0 auto;padding:0 32px 80px;}
+.app{max-width:1360px;margin:0 auto;padding:0 32px 80px;padding-left:max(32px,env(safe-area-inset-left));padding-right:max(32px,env(safe-area-inset-right));}
 
 /* ═══════════════════════════════════════════
    HEADER
@@ -716,24 +721,146 @@ html.dark .pending-banner{background:linear-gradient(135deg,rgba(251,191,36,.06)
 /* ═══════════════════════════════════════════
    RESPONSIVE
 ═══════════════════════════════════════════ */
+/* ════════════════════════════════
+   TABLET — iPad (768px)
+════════════════════════════════ */
+@media(max-width:1024px){
+  .app{padding:0 24px 80px;}
+  .sgrid{grid-template-columns:repeat(2,1fr);}
+  .chart-row-1{grid-template-columns:1fr!important;}
+  [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important;}
+}
+
+/* ════════════════════════════════
+   MOBILE — ปิด desktop tabs
+════════════════════════════════ */
 @media(max-width:768px){
-  .app{padding:0 18px 60px;}
-  .sgrid{grid-template-columns:1fr 1fr;}
+  /* Layout */
+  .app{padding:0 16px 100px;}
+  header{padding:16px 0 14px;}
+
+  /* ซ่อน tab bar ด้านบน บนมือถือ */
+  .tabs{display:none;}
+
+  /* Bottom navigation */
+  #mobileNav{
+    display:flex;
+    position:fixed;bottom:0;left:0;right:0;z-index:200;
+    background:var(--surface);
+    border-top:1px solid var(--border);
+    padding:0;
+    padding-bottom:env(safe-area-inset-bottom);
+    box-shadow:0 -8px 32px rgba(0,0,0,.10);
+    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  }
+  html.dark #mobileNav{background:rgba(22,27,39,.95);}
+  .mnav-item{
+    flex:1;display:flex;flex-direction:column;align-items:center;
+    gap:3px;padding:10px 4px 8px;
+    border:none;background:transparent;
+    color:var(--text3);font-family:var(--sans);font-size:10px;font-weight:500;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;
+  }
+  .mnav-item.active{color:var(--accent);}
+  .mnav-item .mni{font-size:22px;line-height:1;}
+  .mnav-item .mnl{font-size:10px;margin-top:1px;}
+  /* Active dot */
+  .mnav-item.active::before{
+    content:'';position:absolute;
+    width:28px;height:3px;border-radius:99px;
+    background:var(--accent);
+    top:0;
+  }
+  .mnav-item{position:relative;}
+
+  /* Summary cards — 2 col */
+  .sgrid{grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+  .scard{padding:18px 16px 16px;}
+  .sc-val{font-size:22px;letter-spacing:-1px;}
+  .sc-lbl{font-size:10.5px;margin-bottom:8px;}
+  .sc-sub{font-size:11px;margin-top:6px;}
+
+  /* Cards */
+  .card{padding:16px;}
+  .sb{padding:16px 18px;}
+
+  /* Auth bar */
+  #authBar{padding:8px 16px;font-size:12px;}
+
+  /* Section headers */
+  .sech{margin-bottom:12px;}
+  .sectl{font-size:14px;}
+
+  /* Grids → 1 col */
   .sr{grid-template-columns:1fr;}
   .lgrid{grid-template-columns:1fr;}
-  header{padding:18px 0;}
-  .tabs{padding:4px;gap:2px;border-radius:var(--r-lg);}
-  .tab{min-width:82px;font-size:12.5px;padding:9px 10px;}
-  .sc-val{font-size:24px;}
-  .card{padding:18px;}
-  .chart-row-1{grid-template-columns:1fr!important;}
-}
-@media(max-width:480px){
-  .sgrid{grid-template-columns:1fr 1fr;}
-  th:nth-child(n+5),td:nth-child(n+5){display:none;}
+  .wgrid{grid-template-columns:1fr 1fr;gap:12px;}
+  .bgrid{grid-template-columns:1fr;}
   .fgrid{grid-template-columns:1fr;}
-  .wgrid{grid-template-columns:1fr 1fr;}
-  .app{padding:0 14px 48px;}
+  .chart-row-1{grid-template-columns:1fr!important;}
+  [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important;}
+  [style*="grid-template-columns:1fr 380px"]{grid-template-columns:1fr!important;}
+
+  /* Table — show fewer columns */
+  th:nth-child(n+4),td:nth-child(n+4){display:none;}
+
+  /* Subtabs */
+  .subtabs{width:100%;display:flex;}
+  .subtab{flex:1;text-align:center;justify-content:center;padding:9px 8px;}
+
+  /* Buttons — full touch target */
+  .btn{padding:11px 18px;font-size:14px;}
+  .bsm{padding:8px 13px;font-size:12.5px;}
+
+  /* Forms */
+  .fg input,.fg select,.fg textarea{padding:12px 14px;font-size:15px;}
+
+  /* Modal */
+  .moverlay{align-items:flex-end;}
+  .modal{
+    border-radius:var(--r-xl) var(--r-xl) 0 0;
+    max-width:100%;padding:24px 20px 32px;
+    max-height:88vh;
+    animation:modalUp .28s cubic-bezier(.34,1.4,.64,1);
+  }
+  @keyframes modalUp{
+    from{transform:translateY(100%);}
+    to{transform:translateY(0);}
+  }
+  /* Modal drag handle */
+  .modal::before{
+    content:'';display:block;width:40px;height:4px;
+    background:var(--border2);border-radius:99px;
+    margin:0 auto 20px;
+  }
+
+  /* Loan cards */
+  .lcard{padding:16px;}
+  .lcamt{font-size:20px;}
+
+  /* Recent tx table minimal */
+  .twrap table th:nth-child(3),
+  .twrap table td:nth-child(3){display:none;}
+
+  /* Wallet cards */
+  .wcard{padding:18px 16px;}
+  .wcard-bal{font-size:24px;}
+
+  /* Hide heavy chart on smallest */
+  .chart-mobile-hide{display:none;}
+}
+
+/* ════════════════════════════════
+   SMALL PHONE (480px)
+════════════════════════════════ */
+@media(max-width:480px){
+  .app{padding:0 12px 100px;}
+  .sgrid{grid-template-columns:1fr 1fr;gap:10px;}
+  .scard{padding:14px 13px;}
+  .sc-val{font-size:19px;}
+  .wgrid{grid-template-columns:1fr;}
+  th:nth-child(n+4),td:nth-child(n+4){display:none;}
+  #authBar{font-size:11.5px;}
 }
 </style>
 <!-- Firebase SDK -->
@@ -2801,6 +2928,42 @@ function initDark(){
 }
 
 // ── INIT ─────────────────────────────────────────────────
+
+// ── MOBILE NAV ──────────────────────────────────────
+function mNav(panel, btn){
+  // Switch panel
+  const tabBtn = document.querySelector(`.tab[onclick*="${panel}"]`);
+  if(tabBtn){ sw(panel, tabBtn); }
+  else {
+    // panels not in top tabs (more, split)
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    const el = document.getElementById('panel-'+panel);
+    if(el) el.classList.add('active');
+    // Handle split = transactions subtab
+    if(panel==='split'){
+      const txTab=document.querySelector('.tab[onclick*="transactions"]');
+      if(txTab) sw('transactions',txTab);
+      const stEl=document.getElementById('st-split');
+      if(stEl) swSub('split',stEl);
+    }
+    if(panel==='report'){const t=document.querySelector('.tab[onclick*="report"]');if(t)sw('report',t);}
+    if(panel==='yearly'){const t=document.querySelector('.tab[onclick*="yearly"]');if(t)sw('yearly',t);}
+  }
+  // Update active state
+  document.querySelectorAll('.mnav-item').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  // Scroll to top
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// Show/hide mobile nav based on screen width
+function checkMobileNav(){
+  const nav = document.getElementById('mobileNav');
+  if(!nav) return;
+  nav.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+}
+window.addEventListener('resize', checkMobileNav);
+
 (function init(){
   const now=new Date();
   document.getElementById('hDate').textContent=now.toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
@@ -2812,6 +2975,7 @@ function initDark(){
   // Hook reset modal month change
   document.getElementById('resetMonth').addEventListener('change', updateResetPreview);
   initDark();
+  checkMobileNav();
   updCats();popFCat();popSpCat();popWalletDropdowns();
   rendSpMembers();
   checkNewMonth();
@@ -2819,5 +2983,45 @@ function initDark(){
   rYearly();
 })();
 </script>
+
+<!-- ════ MOBILE BOTTOM NAV ════ -->
+<nav id="mobileNav" style="display:none;">
+  <button class="mnav-item active" onclick="mNav('overview',this)" data-panel="overview">
+    <span class="mni">📊</span><span class="mnl">ภาพรวม</span>
+  </button>
+  <button class="mnav-item" onclick="mNav('transactions',this)" data-panel="transactions">
+    <span class="mni">💳</span><span class="mnl">รายการ</span>
+  </button>
+  <button class="mnav-item" onclick="mNav('wallets',this)" data-panel="wallets">
+    <span class="mni">👛</span><span class="mnl">กระเป๋า</span>
+  </button>
+  <button class="mnav-item" onclick="mNav('loans',this)" data-panel="loans">
+    <span class="mni">🤝</span><span class="mnl">ยืม</span>
+  </button>
+  <button class="mnav-item" onclick="mNav('budget',this)" data-panel="budget">
+    <span class="mni">💰</span><span class="mnl">ออม</span>
+  </button>
+  <button class="mnav-item" onclick="mNav('more',this)" data-panel="more">
+    <span class="mni">⋯</span><span class="mnl">เพิ่มเติม</span>
+  </button>
+</nav>
+
+<!-- More panel (report+yearly on mobile) -->
+<div id="panel-more" class="panel" style="display:none;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
+    <button class="btn bg" style="flex-direction:column;gap:6px;padding:20px;height:auto;" onclick="mNav('report',document.querySelector('[data-panel=more]'))">
+      <span style="font-size:28px;">📈</span><span>รายงาน</span>
+    </button>
+    <button class="btn bg" style="flex-direction:column;gap:6px;padding:20px;height:auto;" onclick="mNav('yearly',document.querySelector('[data-panel=more]'))">
+      <span style="font-size:28px;">🗓️</span><span>สรุปรายปี</span>
+    </button>
+    <button class="btn bg" style="flex-direction:column;gap:6px;padding:20px;height:auto;" onclick="mNav('split',document.querySelector('[data-panel=more]'))">
+      <span style="font-size:28px;">🧾</span><span>หารบิล</span>
+    </button>
+    <button class="btn bg" style="flex-direction:column;gap:6px;padding:20px;height:auto;" onclick="expCSV()">
+      <span style="font-size:28px;">📥</span><span>Export CSV</span>
+    </button>
+  </div>
+</div>
 </body>
 </html>
