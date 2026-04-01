@@ -303,9 +303,17 @@ html.dark .card{background:rgba(22,27,39,.8);}
   background:var(--s2);
   border:1.5px solid var(--border);
   border-radius:var(--r-sm);
-  padding:11px 14px;
+  padding:11px 40px 11px 14px;
   color:var(--text);font-family:var(--sans);font-size:14.5px;
   outline:none;width:100%;
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+}
+.fg input,.fg textarea{
+  background-image:none;
+  padding:11px 14px;
 }
 .fg input:focus,.fg select:focus,.fg textarea:focus{
   border-color:var(--accent);
@@ -459,14 +467,32 @@ html.dark .pbar{background:var(--s3);}
 /* ═══════════════════════════════════════════
    FILTER BAR
 ═══════════════════════════════════════════ */
-.fbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
-.fbar input,.fbar select{
+.fbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
+.fbar select{
   background:var(--surface);border:1.5px solid var(--border);
-  border-radius:var(--r-sm);padding:9px 13px;
-  color:var(--text);font-family:var(--sans);font-size:13.5px;outline:none;
+  border-radius:var(--r-sm);padding:10px 38px 10px 14px;
+  color:var(--text);font-family:var(--sans);font-size:14px;
+  outline:none;height:44px;
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+}
+.fbar input{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--r-sm);padding:10px 14px;
+  color:var(--text);font-family:var(--sans);font-size:14px;
+  outline:none;height:44px;
 }
 html.dark .fbar input,html.dark .fbar select{background:var(--s2);}
-.fbar input:focus,.fbar select:focus{border-color:var(--accent);}
+.fbar input:focus,.fbar select:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(var(--accent-rgb),.12);
+}
+@media(max-width:768px){
+  .fbar{gap:8px;}
+  .fbar input,.fbar select{height:42px;font-size:14px;padding:10px 13px;width:100%;}
+}
 
 /* ═══════════════════════════════════════════
    STATS PANEL
