@@ -1877,7 +1877,7 @@ function swSub(id,btn){
 // ── CATEGORY DROPDOWNS ───────────────────────────────────
 function updCats(){
   const t=document.getElementById('txType').value;
-  document.getElementById('txCat').innerHTML=(t==='income'?CI:CE).map(c=>`<option>${c}</option>`).join('');
+  document.getElementById('txCat').innerHTML='<option value="" disabled selected>เลือกหมวดหมู่</option>' + (t==='income'?CI:CE).map(c=>`<option>${c}</option>`).join('');
 }
 function popFCat(){document.getElementById('txFC').innerHTML='<option value="">ทุกหมวด</option>'+[...CI,...CE].map(c=>`<option>${c}</option>`).join('');}
 function popSpCat(){document.getElementById('spCat').innerHTML=CE.map(c=>`<option>${c}</option>`).join('');}
@@ -1891,7 +1891,7 @@ function getTxFormVals(){
     dt:document.getElementById('txDate').value,
     nt:document.getElementById('txNote').value,
     tg:document.getElementById('txTag').value,
-    walletId:parseInt(document.getElementById('txWallet').value)||D.wallets[0]?.id
+    walletId:parseInt(document.getElementById('txWallet').value)
   };
 }
 function clearTxForm(){
@@ -1911,6 +1911,8 @@ function submitTx(){
 }
 function addTx(){
   const{t,cat,amt,dt,nt,tg,walletId}=getTxFormVals();
+  if(!cat){notif('กรุณาเลือกหมวดหมู่','e');return;}
+  if(!walletId || isNaN(walletId)){notif('กรุณาเลือกกระเป๋าเงิน','e');return;}
   if(!amt||amt<=0){notif('ระบุจำนวนเงิน','e');return;}
   if(!dt){notif('ระบุวันที่','e');return;}
   D.tx.push({id:Date.now(),t,cat,amt,dt,nt,tg,walletId});
@@ -1958,6 +1960,8 @@ function openEditTx(id){
 }
 function saveEditTx(id){
   const{t,cat,amt,dt,nt,tg,walletId}=getTxFormVals();
+  if(!cat){notif('กรุณาเลือกหมวดหมู่','e');return;}
+  if(!walletId || isNaN(walletId)){notif('กรุณาเลือกกระเป๋าเงิน','e');return;}
   if(!amt||amt<=0){notif('ระบุจำนวนเงิน','e');return;}
   if(!dt){notif('ระบุวันที่','e');return;}
   const idx=D.tx.findIndex(x=>x.id===id);
@@ -3236,14 +3240,11 @@ function popWalletDropdowns(){
   const lw=document.getElementById('lWallet');
   if(lw){lw.innerHTML=D.wallets.map(w=>`<option value="${w.id}">${w.icon} ${w.name}</option>`).join('');}
 
-  const opts=D.wallets.map(w=>`<option value="${w.id}">${w.icon} ${w.name}</option>`).join('');
+  const opts='<option value="" disabled selected>เลือกกระเป๋าเงิน</option>' + D.wallets.map(w=>`<option value="${w.id}">${w.icon} ${w.name}</option>`).join('');
   ['txWallet','trFrom','trTo'].forEach(id=>{
     const el=document.getElementById(id);
     if(el){ el.innerHTML=opts; }
   });
-  // Default txWallet to first wallet
-  const txW=document.getElementById('txWallet');
-  if(txW && !txW.value) txW.value=D.wallets[0]?.id||'';
 }
 
 function openWalletModal(id){
@@ -3305,6 +3306,7 @@ function doTransfer(){
   const amt=parseFloat(document.getElementById('trAmt').value)||0;
   const dt=document.getElementById('trDate').value;
   const note=document.getElementById('trNote').value;
+  if(isNaN(fromId) || isNaN(toId)){ notif('กรุณาเลือกกระเป๋าเงิน','e'); return; }
   if(fromId===toId){ notif('กระเป๋าต้นทางและปลายทางต้องไม่เหมือนกัน','e'); return; }
   if(!amt||amt<=0){ notif('ระบุจำนวนเงิน','e'); return; }
   if(!dt){ notif('ระบุวันที่','e'); return; }
